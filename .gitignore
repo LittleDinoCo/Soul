@@ -1,0 +1,17 @@
+# Compiled files
+*.o
+*.obj
+*.exe
+*.out
+
+# Build directories
+build/
+cmake-build-*/
+
+# IDE files
+.vscode/
+.idea/
+
+# Debug files
+*.pdb
+*.ilk
