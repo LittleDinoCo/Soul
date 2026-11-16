@@ -1,3 +1,4 @@
+
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <iostream>
@@ -9,25 +10,27 @@ struct gameData {
 gameData gameStuff;
 
 
-class PangolinData {
+class PlayerData {
     private:
         float radius = 20.f;
-        float mass = 300.f;
-        float restitution = 1.8f;
-        //Accel from input while not in ball form
-        float platformerAccel = 200.f;
-        //Accel from input while in ball form
-        float rollAccel = 100.f;
+        float acceleration = 1000.f;
+        float maxSpeed = 300.f;
+        float friction = 0.95f;
         sf::Vector2f velocity{0, 0};
         sf::Vector2f position{906, 600};
 
     public:
-        void move(int dir, int form, float dt) {
-            if (form == 0) {
-                velocity.x += dir * platformerAccel * dt;
+        void move(sf::Vector2f dir, float dt) {
+            float speed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+            velocity += dir * acceleration * dt;
+            if (speed > maxSpeed) {
+                velocity = (velocity / speed) * maxSpeed;
             }
-            else {
-                velocity.x += dir * rollAccel * dt;
+            if (dir.x == 0) {
+                velocity.x *= friction;
+            }
+            if (dir.y == 0) {
+                velocity.y *= friction;
             }
         }
         void update(float dt) {
@@ -40,13 +43,7 @@ class PangolinData {
             return radius;
         }
 };
-PangolinData Pangolin;
-
-
-
-
-
-
+PlayerData player;
 
 int main() {
     std::cout << "Hello World!\n";
@@ -61,7 +58,7 @@ int main() {
         sf::Color(255, 0, 150),
     };
     
-    float radius = Pangolin.getRadius();
+    float radius = player.getRadius();
     
     sf::CircleShape Player(radius);
     Player.setOrigin({radius, radius});
@@ -88,19 +85,35 @@ int main() {
         }
 
         }
+        sf::Vector2f direction{0.f, 0.f};
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+            direction.y = -1;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
+            direction.y = 1;
+        }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-            std::cout << "Yay\n";
-            Pangolin.move(-1, 2, dt);
+            direction.x = -1;
         }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-            std::cout << "Yay\n";
-            Pangolin.move(1, 2, dt);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+            direction.x = 1;
         }
 
-        Pangolin.update(dt);
+        float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
-        sf::Vector2f position = Pangolin.getPos();
+        if (length != 0) {
+            direction /= length;
+        }
+
+
+
+        player.move(direction ,dt);
+
+        player.update(dt);
+
+        sf::Vector2f position = player.getPos();
 
         Player.setPosition(position);
 
@@ -114,3 +127,4 @@ int main() {
 
     return 0;
 }
+
