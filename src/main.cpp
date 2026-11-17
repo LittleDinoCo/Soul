@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
-#include "player.hpp"
 #include <cmath>
+#include "player.hpp"
+#include "enemy.hpp"
+
 
 struct gameData {
     sf::Clock clock;
@@ -8,16 +10,23 @@ struct gameData {
 
 gameData gameStuff;
 Player player;
+Enemy enemy;
+
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({1920, 1200}), "Pangolin Game");
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(false);
 
-    float radius = player.getRadius();
+    float pradius = player.getRadius();
+    float eradius = enemy.getRadius();
 
-    sf::CircleShape PlayerShape(radius);
-    PlayerShape.setOrigin({radius, radius});
+    sf::CircleShape PlayerShape(pradius);
+    PlayerShape.setOrigin({pradius, pradius});
+    sf::CircleShape EnemyShape(eradius);
+    EnemyShape.setOrigin({eradius, eradius});
+    EnemyShape.setFillColor(sf::Color::Red);
+
 
     while (window.isOpen()) {
         float dt = gameStuff.clock.restart().asSeconds();
@@ -43,9 +52,19 @@ int main() {
         player.update(dt);
 
         PlayerShape.setPosition(player.getPos());
+        EnemyShape.setPosition(enemy.getPos());
+        
+        sf::Vector2f difference = player.getPos() - enemy.getPos();
+        float distance = std::sqrt(difference.x * difference.x + difference.y * difference.y); 
+
+        if (distance < pradius + eradius) {
+            player.takeDamage(20.f);
+            PlayerShape.setFillColor(sf::Color::Blue);
+        }
 
         window.clear();
         window.draw(PlayerShape);
+        window.draw(EnemyShape);
         window.display();
     }
 

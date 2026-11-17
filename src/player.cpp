@@ -18,6 +18,14 @@ void Player::move(sf::Vector2f dir, float dt) {
 void Player::update(float dt) {
     position += (velocity * dt);
 }
+void Player::takeDamage(float damage) {
+    if (health >= damage) {
+        health -= damage;
+    }
+    else {
+        health = 0;
+    }
+}
 sf::Vector2f Player::getPos() const {
     return position;
 }
