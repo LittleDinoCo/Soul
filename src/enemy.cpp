@@ -32,6 +32,11 @@ void Enemy::takeDamage(float damage, float iFrame) {
     }
 
 }
+void Enemy::knockback(float distance, sf::Vector2f direction) {
+    if (iFrameHit == 0) {
+        position += distance * direction;
+    }
+}
 sf::Vector2f Enemy::getPos() const {
     return position;
 }

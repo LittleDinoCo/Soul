@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/System/Vector2.hpp>
 
 class Enemy {
     private:
@@ -16,6 +17,7 @@ class Enemy {
         void move(sf::Vector2f dir, float dt);
         void update(float dt);
         void takeDamage(float damage, float iFrame);
+        void knockback(float distance, sf::Vector2f direction);
         void draw(sf::RenderWindow& window);
         sf::Vector2f getPos() const;
         float getRadius() const;

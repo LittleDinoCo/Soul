@@ -14,6 +14,7 @@ class Player {
         float iFrameHit = 0.5f;
         float iFrameDash = 1.f;
         float maxHealth = 100.f;
+        float attackDuration = 0.5f;
         sf::Vector2f velocity{0, 0};
         sf::Vector2f position{906, 600};
         sf::CircleShape shape;
@@ -22,10 +23,11 @@ class Player {
         void move(sf::Vector2f dir, float dt);
         void update(float dt);
         void takeDamage(float damage, float iFrame);
-        void attack(Enemy& enemy, sf::RenderWindow& window);
+        void attack(Enemy& enemy, sf::RenderWindow& window, float attackDur);
         void draw(sf::RenderWindow& window);
         bool attackHitsEnemy(Enemy& enemy, sf::Vector2f attackPos, float angleRad);
         sf::Vector2f getPos() const;
+        float getAttackDuration() const;
         float getRadius() const;
         float getHealth() const;
 

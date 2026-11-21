@@ -5,6 +5,7 @@
 #include <SFML/Window/Window.hpp>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 Player::Player() {
     shape.setRadius(radius);
@@ -43,6 +44,14 @@ void Player::update(float dt) {
             iFrameDash = 0;
         }
     }
+    if (attackDuration > 0) {
+        attackDuration -= dt;
+        if (attackDuration < 0) {
+            attackDuration = 0;
+        }
+    }
+    std::cout << attackDuration << "\n";
+
 
 
     position += (velocity * dt);
@@ -82,33 +91,41 @@ bool Player::attackHitsEnemy(Enemy& enemy, sf::Vector2f attackPos, float angleRa
     return false;
 }
 
-void Player::attack(Enemy& enemy, sf::RenderWindow& window) {
-    sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
-    sf::Vector2f mousePos = window.mapPixelToCoords(pixelPos);
-    sf::Vector2f mouseToPlayer = mousePos - position;
-    float length = std::hypot(mouseToPlayer.x, mouseToPlayer.y);
+void Player::attack(Enemy& enemy, sf::RenderWindow& window, float attackDur) {
+    if (attackDuration > 0) {
+        sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+        sf::Vector2f mousePos = window.mapPixelToCoords(pixelPos);
+        sf::Vector2f mouseToPlayer = mousePos - position;
+        float length = std::hypot(mouseToPlayer.x, mouseToPlayer.y);
 
-    if (length == 0.f) return;
+        if (length == 0.f) return;
 
-    sf::Vector2f attackDir = mouseToPlayer / length;
-    sf::Vector2f attackPos = position + attackDir * (radius + 25.f);
+        sf::Vector2f attackDir = mouseToPlayer / length;
+        sf::Vector2f attackPos = position + attackDir * (radius + 25.f);
 
-    float angleRad = std::atan2(attackDir.y, attackDir.x);
-    float angleDeg = angleRad * 180.f / 3.14159265f;
+        float angleRad = std::atan2(attackDir.y, attackDir.x);
+        float angleDeg = angleRad * 180.f / 3.14159265f;
 
-    sf::RectangleShape attackBox({20.f, 50.f});
-    attackBox.setOrigin({10.f, 25.f});
-    attackBox.setRotation(sf::degrees(angleDeg));
-    attackBox.setPosition(attackPos);
-    attackBox.setFillColor(sf::Color::Green);
-    window.draw(attackBox);
-    if (attackHitsEnemy(enemy, attackPos, angleRad)) {
-        enemy.takeDamage(20.f, 0.5f);
+        sf::RectangleShape attackBox({20.f, 50.f});
+        attackBox.setOrigin({10.f, 25.f});
+        attackBox.setRotation(sf::degrees(angleDeg));
+        attackBox.setPosition(attackPos);
+        attackBox.setFillColor(sf::Color::Green);
+        window.draw(attackBox);
+        if (attackHitsEnemy(enemy, attackPos, angleRad)) {
+            enemy.knockback(40.f, attackDir);
+            enemy.takeDamage(20.f, 0.5f);
+        }
+        return;
     }
+        attackDuration = attackDur;
 }
 
 sf::Vector2f Player::getPos() const {
     return position;
+}
+float Player::getAttackDuration() const {
+    return attackDuration;
 }
 float Player::getRadius() const {
     return radius;
