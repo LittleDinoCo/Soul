@@ -1,6 +1,6 @@
 #include "enemy.hpp"
 
-void Enemy::takeDamage(float damage) {
+void Enemy::takeDamage(float damage, float iFrame) {
     if (health >= damage) {
         health -= damage;
     }
@@ -14,4 +14,8 @@ sf::Vector2f Enemy::getPos() const {
 float Enemy::getRadius() const {
     return radius;
 }
+float Enemy::getHealth() const {
+    return health;
+}
+
 

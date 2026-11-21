@@ -14,6 +14,12 @@ add_executable(soul
     src/enemy.cpp
 )
 
+add_custom_command(TARGET soul POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/fonts
+    $<TARGET_FILE_DIR:soul>/fonts
+)
+
 target_link_libraries(soul PRIVATE
     SFML::Graphics
     SFML::Window

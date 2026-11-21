@@ -10,9 +10,10 @@ class Enemy {
     public:
         void move(sf::Vector2f dir, float dt);
         void update(float dt);
-        void takeDamage(float damage);
+        void takeDamage(float damage, float iFrame);
         sf::Vector2f getPos() const;
         float getRadius() const;
+        float getHealth() const;
 
 
 };

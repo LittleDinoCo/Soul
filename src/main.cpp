@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Window/Mouse.hpp>
 #include <cmath>
+#include <string>
 #include "player.hpp"
 #include "enemy.hpp"
 
@@ -17,9 +19,20 @@ int main() {
     sf::RenderWindow window(sf::VideoMode({1920, 1200}), "Pangolin Game");
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(false);
+     sf::View view(sf::FloatRect({0.f, 0.f}, {1920.f, 1080.f}));
+    window.setView(view);
+
+    sf::Font font;
+    if (!font.openFromFile("fonts/AdwaitaSans-Regular.ttf")) {
+        return -1; // Handle missing font file
+    }
 
     float pradius = player.getRadius();
     float eradius = enemy.getRadius();
+     sf::Text eHealth(font, std::to_string(std::lround(enemy.getHealth())), 30);
+     sf::Text pHealth(font, std::to_string(std::lround(player.getHealth())), 30);
+
+   
 
     sf::CircleShape PlayerShape(pradius);
     PlayerShape.setOrigin({pradius, pradius});
@@ -34,6 +47,25 @@ int main() {
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 window.close();
+            }
+            if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+                float aspectRatio =
+                static_cast<float>(resized->size.x) / resized->size.y;
+
+                float targetRatio = 16.f / 9.f;
+
+                sf::View view(sf::FloatRect({0.f, 0.f}, {1920.f, 1080.f}));
+
+                if (aspectRatio > targetRatio) {
+                    float width = 1080.f * aspectRatio;
+                    view.setSize({width, 1080.f});
+                }
+                else {
+                    float height = 1920.f / aspectRatio;
+                    view.setSize({1920.f, height});
+                }
+
+                window.setView(view);
             }
         }
 
@@ -53,18 +85,32 @@ int main() {
 
         PlayerShape.setPosition(player.getPos());
         EnemyShape.setPosition(enemy.getPos());
+        eHealth.setPosition({enemy.getPos().x, enemy.getPos().y - 50});
+        eHealth.setString(std::to_string(std::lround(enemy.getHealth())));
+        pHealth.setPosition({player.getPos().x, player.getPos().y - 50});
+        pHealth.setString(std::to_string(std::lround(player.getHealth())));
+
         
         sf::Vector2f difference = player.getPos() - enemy.getPos();
         float distance = std::sqrt(difference.x * difference.x + difference.y * difference.y); 
 
         if (distance < pradius + eradius) {
-            player.takeDamage(20.f);
-            PlayerShape.setFillColor(sf::Color::Blue);
+            player.takeDamage(20.f, 0.5f);
         }
+        
+                
 
         window.clear();
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+            sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+            sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
+            player.attack(enemy, worldPos, window);
+        }
+
         window.draw(PlayerShape);
         window.draw(EnemyShape);
+        window.draw(eHealth);
+        window.draw(pHealth);
         window.display();
     }
 
