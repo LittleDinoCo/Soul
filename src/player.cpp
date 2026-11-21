@@ -5,8 +5,16 @@
 #include <SFML/Window/Window.hpp>
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 
+Player::Player() {
+    shape.setRadius(radius);
+    shape.setOrigin({radius, radius});
+}
+
+void Player::draw(sf::RenderWindow& window) {
+    shape.setPosition(position);
+    window.draw(shape);
+}
 
 void Player::move(sf::Vector2f dir, float dt) {
     float speed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
@@ -47,22 +55,10 @@ void Player::takeDamage(float damage, float iFrame) {
         else {
             health = 0;
         }
-        std::cout << health << "\n";
         iFrameHit += iFrame;
     }
 }
-void Player::attack(Enemy& enemy, sf::Vector2f mousePos, sf::RenderWindow& window) {
-    sf::Vector2f mouseToPlayer = mousePos - position;
-    float length = std::hypot(mouseToPlayer.x, mouseToPlayer.y);
-
-    if (length == 0.f) return;
-
-    sf::Vector2f attackDir = mouseToPlayer / length;
-    sf::Vector2f attackPos = position + attackDir * (radius + 25.f);
-
-    float angleRad = std::atan2(attackDir.y, attackDir.x);
-    float angleDeg = angleRad * 180.f / 3.14159265f;
-
+bool Player::attackHitsEnemy(Enemy& enemy, sf::Vector2f attackPos, float angleRad) {
     sf::Vector2f widthDir = {-std::sin(angleRad), std::cos(angleRad)};
     sf::Vector2f heightDir = {std::cos(angleRad), std::sin(angleRad)};
     sf::Vector2f swordToEnemy = enemy.getPos() - attackPos;
@@ -79,14 +75,34 @@ void Player::attack(Enemy& enemy, sf::Vector2f mousePos, sf::RenderWindow& windo
 
     float distance = hypot(distToPoint.x, distToPoint.y);
 
+    if (distance <= enemy.getRadius()) {
+        return true;
+    }
+
+    return false;
+}
+
+void Player::attack(Enemy& enemy, sf::RenderWindow& window) {
+    sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+    sf::Vector2f mousePos = window.mapPixelToCoords(pixelPos);
+    sf::Vector2f mouseToPlayer = mousePos - position;
+    float length = std::hypot(mouseToPlayer.x, mouseToPlayer.y);
+
+    if (length == 0.f) return;
+
+    sf::Vector2f attackDir = mouseToPlayer / length;
+    sf::Vector2f attackPos = position + attackDir * (radius + 25.f);
+
+    float angleRad = std::atan2(attackDir.y, attackDir.x);
+    float angleDeg = angleRad * 180.f / 3.14159265f;
+
     sf::RectangleShape attackBox({20.f, 50.f});
     attackBox.setOrigin({10.f, 25.f});
     attackBox.setRotation(sf::degrees(angleDeg));
     attackBox.setPosition(attackPos);
     attackBox.setFillColor(sf::Color::Green);
-
     window.draw(attackBox);
-    if (distance <= enemy.getRadius()) {
+    if (attackHitsEnemy(enemy, attackPos, angleRad)) {
         enemy.takeDamage(20.f, 0.5f);
     }
 }

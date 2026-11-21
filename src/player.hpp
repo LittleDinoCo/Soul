@@ -1,5 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/System/Vector2.hpp>
 #include "enemy.hpp"
 
 class Player {
@@ -14,11 +16,15 @@ class Player {
         float maxHealth = 100.f;
         sf::Vector2f velocity{0, 0};
         sf::Vector2f position{906, 600};
+        sf::CircleShape shape;
     public:
+        Player();
         void move(sf::Vector2f dir, float dt);
         void update(float dt);
         void takeDamage(float damage, float iFrame);
-        void attack(Enemy& enemy, sf::Vector2f mousePos, sf::RenderWindow& window);
+        void attack(Enemy& enemy, sf::RenderWindow& window);
+        void draw(sf::RenderWindow& window);
+        bool attackHitsEnemy(Enemy& enemy, sf::Vector2f attackPos, float angleRad);
         sf::Vector2f getPos() const;
         float getRadius() const;
         float getHealth() const;

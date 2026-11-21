@@ -1,4 +1,16 @@
 #include "enemy.hpp"
+#include <SFML/Graphics/RenderWindow.hpp>
+
+Enemy::Enemy() {
+    shape.setRadius(radius);
+    shape.setOrigin({radius, radius});
+    shape.setFillColor(sf::Color::Red);
+}
+
+void Enemy::draw(sf::RenderWindow& window) {
+    shape.setPosition(position);
+    window.draw(shape);
+}
 
 void Enemy::update(float dt) {
     if (iFrameHit > 0) {

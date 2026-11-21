@@ -26,20 +26,15 @@ int main() {
     if (!font.openFromFile("fonts/AdwaitaSans-Regular.ttf")) {
         return -1; // Handle missing font file
     }
-
     float pradius = player.getRadius();
     float eradius = enemy.getRadius();
-     sf::Text eHealth(font, std::to_string(std::lround(enemy.getHealth())), 30);
-     sf::Text pHealth(font, std::to_string(std::lround(player.getHealth())), 30);
+    sf::Text eHealth(font, std::to_string(std::lround(enemy.getHealth())), 30);
+    sf::Text pHealth(font, std::to_string(std::lround(player.getHealth())), 30);
 
    
 
-    sf::CircleShape PlayerShape(pradius);
-    PlayerShape.setOrigin({pradius, pradius});
-    sf::CircleShape EnemyShape(eradius);
-    EnemyShape.setOrigin({eradius, eradius});
-    EnemyShape.setFillColor(sf::Color::Red);
-
+    
+    
 
     while (window.isOpen()) {
         float dt = gameStuff.clock.restart().asSeconds();
@@ -67,6 +62,12 @@ int main() {
 
                 window.setView(view);
             }
+            if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+                if (mousePressed->button == sf::Mouse::Button::Left) {
+                    player.attack(enemy, window);
+ 
+                }
+            }
         }
 
         sf::Vector2f direction{0.f, 0.f};
@@ -84,8 +85,6 @@ int main() {
         player.update(dt);
         enemy.update(dt);
 
-        PlayerShape.setPosition(player.getPos());
-        EnemyShape.setPosition(enemy.getPos());
         eHealth.setPosition({enemy.getPos().x, enemy.getPos().y - 50});
         eHealth.setString(std::to_string(std::lround(enemy.getHealth())));
         pHealth.setPosition({player.getPos().x, player.getPos().y - 50});
@@ -102,14 +101,8 @@ int main() {
                 
 
         window.clear();
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-            sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
-            sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
-            player.attack(enemy, worldPos, window);
-        }
-
-        window.draw(PlayerShape);
-        window.draw(EnemyShape);
+        player.draw(window);
+        enemy.draw(window);
         window.draw(eHealth);
         window.draw(pHealth);
         window.display();
