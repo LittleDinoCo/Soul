@@ -1,7 +1,9 @@
 #include "player.hpp"
 #include "enemy.hpp"
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Window.hpp>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 
@@ -50,22 +52,45 @@ void Player::takeDamage(float damage, float iFrame) {
     }
 }
 void Player::attack(Enemy& enemy, sf::Vector2f mousePos, sf::RenderWindow& window) {
-    sf::RectangleShape attackBox({20,50});
     sf::Vector2f mouseToPlayer = mousePos - position;
     float length = std::hypot(mouseToPlayer.x, mouseToPlayer.y);
-    if (length == 0.f) {
-        return;
-    }
+
+    if (length == 0.f) return;
+
     sf::Vector2f attackDir = mouseToPlayer / length;
     sf::Vector2f attackPos = position + attackDir * (radius + 25.f);
-    float angle = std::atan2(attackDir.y, attackDir.x) * 180.f / 3.14159265f;
+
+    float angleRad = std::atan2(attackDir.y, attackDir.x);
+    float angleDeg = angleRad * 180.f / 3.14159265f;
+
+    sf::Vector2f widthDir = {-std::sin(angleRad), std::cos(angleRad)};
+    sf::Vector2f heightDir = {std::cos(angleRad), std::sin(angleRad)};
+    sf::Vector2f swordToEnemy = enemy.getPos() - attackPos;
+
+    float projectedWidth = (swordToEnemy.x * widthDir.x) + (swordToEnemy.y * widthDir.y);
+    float projectedHeight = (swordToEnemy.x * heightDir.x) + (swordToEnemy.y * heightDir.y);
+
+    float closestWidth = std::clamp(projectedWidth, -10.f, 10.f);
+    float closestHeight = std::clamp(projectedHeight, -25.f, 25.f);
+
+    sf::Vector2f closestPoint = attackPos + widthDir * closestWidth + heightDir * closestHeight;
+
+    sf::Vector2f distToPoint = enemy.getPos() - closestPoint;
+
+    float distance = hypot(distToPoint.x, distToPoint.y);
+
+    sf::RectangleShape attackBox({20.f, 50.f});
     attackBox.setOrigin({10.f, 25.f});
-    attackBox.setRotation(sf::degrees(angle));
+    attackBox.setRotation(sf::degrees(angleDeg));
     attackBox.setPosition(attackPos);
     attackBox.setFillColor(sf::Color::Green);
+
     window.draw(attackBox);
-    enemy.takeDamage(20.f, 0.5f);
+    if (distance <= enemy.getRadius()) {
+        enemy.takeDamage(20.f, 0.5f);
+    }
 }
+
 sf::Vector2f Player::getPos() const {
     return position;
 }

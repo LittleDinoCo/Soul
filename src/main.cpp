@@ -82,6 +82,7 @@ int main() {
 
         player.move(direction, dt);
         player.update(dt);
+        enemy.update(dt);
 
         PlayerShape.setPosition(player.getPos());
         EnemyShape.setPosition(enemy.getPos());
