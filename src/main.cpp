@@ -94,7 +94,7 @@ int main() {
         sf::Vector2f difference = player.getPos() - enemy.getPos();
         float distance = std::sqrt(difference.x * difference.x + difference.y * difference.y); 
 
-        if (distance < pradius + eradius) {
+        if (distance < pradius + eradius && enemy.getAlive()) {
             player.takeDamage(20.f, 0.5f);
         }
         
@@ -103,8 +103,12 @@ int main() {
         window.clear();
         player.draw(window);
         enemy.draw(window);
-        window.draw(eHealth);
-        window.draw(pHealth);
+        if (enemy.getAlive()) {
+            window.draw(eHealth);
+        }
+        if (player.getAlive()) {
+            window.draw(pHealth);
+        }
         window.display();
     }
 

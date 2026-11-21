@@ -5,7 +5,6 @@
 #include <SFML/Window/Window.hpp>
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 
 Player::Player() {
     shape.setRadius(radius);
@@ -13,8 +12,10 @@ Player::Player() {
 }
 
 void Player::draw(sf::RenderWindow& window) {
-    shape.setPosition(position);
-    window.draw(shape);
+    if (alive) {
+        shape.setPosition(position);
+        window.draw(shape);
+    }
 }
 
 void Player::move(sf::Vector2f dir, float dt) {
@@ -50,7 +51,6 @@ void Player::update(float dt) {
             attackDuration = 0;
         }
     }
-    std::cout << attackDuration << "\n";
 
 
 
@@ -63,6 +63,9 @@ void Player::takeDamage(float damage, float iFrame) {
         }
         else {
             health = 0;
+        }
+        if (health == 0) {
+            alive = false;
         }
         iFrameHit += iFrame;
     }
@@ -132,6 +135,9 @@ float Player::getRadius() const {
 }
 float Player::getHealth() const {
     return health;
+}
+bool Player::getAlive() const {
+    return alive;
 }
 
 

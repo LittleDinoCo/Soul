@@ -8,8 +8,10 @@ Enemy::Enemy() {
 }
 
 void Enemy::draw(sf::RenderWindow& window) {
-    shape.setPosition(position);
-    window.draw(shape);
+    if (alive) {
+        shape.setPosition(position);
+        window.draw(shape);
+    }
 }
 
 void Enemy::update(float dt) {
@@ -28,6 +30,9 @@ void Enemy::takeDamage(float damage, float iFrame) {
         else {
             health = 0;
         }
+        if (health == 0) {
+            alive = false;
+        }
         iFrameHit += iFrame;
     }
 
@@ -45,6 +50,9 @@ float Enemy::getRadius() const {
 }
 float Enemy::getHealth() const {
     return health;
+}
+bool Enemy::getAlive() const {
+    return alive;
 }
 
 

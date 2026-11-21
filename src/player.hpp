@@ -15,6 +15,7 @@ class Player {
         float iFrameDash = 1.f;
         float maxHealth = 100.f;
         float attackDuration = 0.5f;
+        bool alive = true;
         sf::Vector2f velocity{0, 0};
         sf::Vector2f position{906, 600};
         sf::CircleShape shape;
@@ -30,6 +31,7 @@ class Player {
         float getAttackDuration() const;
         float getRadius() const;
         float getHealth() const;
+        bool getAlive() const;
 
 
 

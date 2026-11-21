@@ -10,6 +10,7 @@ class Enemy {
         float health = 100.f;
         float maxHealth = 100.f;
         float iFrameHit = 0.5f;
+        bool alive =  true;
         sf::Vector2f position{500, 600};
         sf::CircleShape shape;
     public:
@@ -22,6 +23,7 @@ class Enemy {
         sf::Vector2f getPos() const;
         float getRadius() const;
         float getHealth() const;
+        bool getAlive() const;
 
 
 };
