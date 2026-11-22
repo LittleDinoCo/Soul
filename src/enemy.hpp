@@ -9,14 +9,19 @@ class Enemy {
         float radius = 20.f;
         float health = 100.f;
         float maxHealth = 100.f;
-        float iFrameHit = 0.5f;
+        float iFrameHit = 0.f;
+        float damageFlash = 0.f;
+        float attackCooldown = 0.f;
+        float attackDuration = 0.0f;
         bool alive =  true;
+        sf::Vector2f velocity{0, 0};
         sf::Vector2f position{500, 600};
         sf::CircleShape shape;
     public:
         Enemy();
-        void move(sf::Vector2f dir, float dt);
-        void update(float dt);
+        void move(sf::Vector2f targetPos, float dt);
+        void update(sf::Vector2f targetPos, float dt);
+        void attack();
         void takeDamage(float damage, float iFrame);
         void knockback(float distance, sf::Vector2f direction);
         void draw(sf::RenderWindow& window);

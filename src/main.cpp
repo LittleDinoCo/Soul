@@ -38,6 +38,7 @@ int main() {
 
     while (window.isOpen()) {
         float dt = gameStuff.clock.restart().asSeconds();
+        window.clear();
 
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
@@ -83,7 +84,7 @@ int main() {
 
         player.move(direction, dt);
         player.update(dt);
-        enemy.update(dt);
+        enemy.update(player.getPos(), dt);
 
         eHealth.setPosition({enemy.getPos().x, enemy.getPos().y - 50});
         eHealth.setString(std::to_string(std::lround(enemy.getHealth())));
@@ -100,7 +101,7 @@ int main() {
         
                 
 
-        window.clear();
+        
         player.draw(window);
         enemy.draw(window);
         if (enemy.getAlive()) {

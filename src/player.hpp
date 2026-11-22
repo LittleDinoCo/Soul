@@ -13,11 +13,13 @@ class Player {
         float health = 100.f;
         float iFrameHit = 0.5f;
         float iFrameDash = 1.f;
+        float damageFlash = 0.f;
         float maxHealth = 100.f;
         float attackDuration = 0.5f;
         bool alive = true;
         sf::Vector2f velocity{0, 0};
         sf::Vector2f position{906, 600};
+        sf::Vector2f attackDir;
         sf::CircleShape shape;
     public:
         Player();
