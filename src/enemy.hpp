@@ -3,6 +3,7 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
+class Player;
 
 class Enemy {
     private:
@@ -20,7 +21,7 @@ class Enemy {
     public:
         Enemy();
         void move(sf::Vector2f targetPos, float dt);
-        void update(sf::Vector2f targetPos, float dt);
+        void update(const Player& target, float dt);
         void attack();
         void takeDamage(float damage, float iFrame);
         void knockback(float distance, sf::Vector2f direction);
@@ -28,6 +29,7 @@ class Enemy {
         sf::Vector2f getPos() const;
         float getRadius() const;
         float getHealth() const;
+        int getType() const;
         bool getAlive() const;
 
 

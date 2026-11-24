@@ -5,6 +5,7 @@
 #include <SFML/Window/Window.hpp>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 Player::Player() {
     shape.setRadius(radius);
@@ -37,6 +38,14 @@ void Player::move(sf::Vector2f dir, float dt) {
 }
 
 void Player::update(float dt) {
+    if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
+        isSiphoning = 0;
+        siphoned = false;
+    }
+    if (isSiphoning == 0) {
+        maxSpeed = topSpeed;
+    }
+
     if (iFrameHit > 0) {
         iFrameHit -= dt;
         if (iFrameHit < 0) {
@@ -61,6 +70,16 @@ void Player::update(float dt) {
             damageFlash = 0;
         }
     }
+    if (isSiphoning > 0) {
+        isSiphoning -= dt;
+        if (isSiphoning < 0) {
+            isSiphoning = 0;
+        }
+        if (isSiphoning <= 0) {
+            siphoned = true;
+        }
+    }
+
 
     position += (velocity * dt);
 }
@@ -76,10 +95,12 @@ void Player::takeDamage(float damage, float iFrame) {
         if (health == 0) {
             alive = false;
         }
+        isSiphoning = 0;
+        siphoned = false;
         iFrameHit += iFrame;
     }
 }
-bool Player::attackHitsEnemy(Enemy& enemy, sf::Vector2f attackPos, float angleRad) {
+bool Player::attackHitsEnemy(const Enemy& enemy, sf::Vector2f attackPos, float angleRad) {
     sf::Vector2f widthDir = {-std::sin(angleRad), std::cos(angleRad)};
     sf::Vector2f heightDir = {std::cos(angleRad), std::sin(angleRad)};
     sf::Vector2f swordToEnemy = enemy.getPos() - attackPos;
@@ -131,6 +152,50 @@ void Player::attack(Enemy& enemy, sf::RenderWindow& window, float attackDur) {
     attackDir = mouseToPlayer / length;
 
     attackDuration = attackDur;
+}
+
+void Player::siphon(Enemy& enemy, sf::RenderWindow& window) {
+    //Stops it if key released
+        //Debug Only
+    sf::CircleShape siphonRadius(100 + radius + enemy.getRadius());
+    siphonRadius.setOrigin({siphonRadius.getRadius(), siphonRadius.getRadius()});
+    siphonRadius.setPosition(enemy.getPos());
+    siphonRadius.setFillColor(sf::Color::Magenta);
+    window.draw(siphonRadius);
+
+    //Actual Stuff
+    sf::Vector2f distance = enemy.getPos() - position;
+    float length = std::sqrt((distance.x * distance.x) + (distance.y * distance.y)); 
+    if (enemy.getRadius() + radius + 100 >= length && enemy.getHealth() <= 30 ) {
+        if (isSiphoning != 0) {
+            maxSpeed = topSpeed / 1.5;
+            return;
+        }
+        if (siphoned == true) {
+            int possible = 2;
+            for (int soul = 0; soul < std::size(souls); soul ++) {
+                if (souls[soul] == 0) {
+                    possible = soul;
+                    break;
+                }
+            }
+
+            souls[possible] = enemy.getType();
+            std::cout << souls[0] << " " << souls[1] << " " << souls[2] << "\n";
+            enemy.takeDamage(1000000.f, 0.f);
+            siphoned = false;
+            return;
+
+        }
+    
+    }
+    else {
+        isSiphoning = 0.f;
+        siphoned = false;
+        return;
+    }
+    isSiphoning = 3.f;
+
 }
 
 sf::Vector2f Player::getPos() const {

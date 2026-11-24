@@ -1,4 +1,5 @@
 #include "enemy.hpp"
+#include "player.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -18,7 +19,7 @@ void Enemy::draw(sf::RenderWindow& window) {
     }
 }
 
-void Enemy::update(sf::Vector2f targetPos, float dt) {
+void Enemy::update(const Player& target, float dt) {
     if (iFrameHit > 0) {
         iFrameHit -= dt;
         if (iFrameHit < 0) {
@@ -43,14 +44,14 @@ void Enemy::update(sf::Vector2f targetPos, float dt) {
             attackCooldown = 0;
         }
     }
-    sf::Vector2f enemyToTarget = targetPos - position;
+    sf::Vector2f enemyToTarget = target.getPos() - position;
     float length = std::sqrt((enemyToTarget.x * enemyToTarget.x) + (enemyToTarget.y * enemyToTarget.y));
 
-    if (length < 200 && attackCooldown == 0) {
+    if (length < 200 + radius + target.getRadius() && attackCooldown == 0) {
         attack();
     }
     else if (attackDuration == 0) {
-        move(targetPos, dt);
+        move(target.getPos(), dt);
     }
     position += (velocity * dt);
 }
@@ -95,6 +96,9 @@ float Enemy::getRadius() const {
 }
 float Enemy::getHealth() const {
     return health;
+}
+int Enemy::getType() const {
+    return 1;
 }
 bool Enemy::getAlive() const {
     return alive;

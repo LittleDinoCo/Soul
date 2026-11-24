@@ -77,6 +77,8 @@ int main() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) direction.y = 1;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) direction.x = -1;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) direction.x = 1;
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) player.siphon(enemy, window);
+
 
         float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
@@ -84,7 +86,7 @@ int main() {
 
         player.move(direction, dt);
         player.update(dt);
-        enemy.update(player.getPos(), dt);
+        enemy.update(player, dt);
 
         eHealth.setPosition({enemy.getPos().x, enemy.getPos().y - 50});
         eHealth.setString(std::to_string(std::lround(enemy.getHealth())));
