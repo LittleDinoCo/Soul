@@ -3,6 +3,7 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
+#include "timer.hpp"
 class Player;
 
 class Enemy {
@@ -10,10 +11,10 @@ class Enemy {
         float radius = 20.f;
         float health = 100.f;
         float maxHealth = 100.f;
-        float iFrameHit = 0.f;
-        float damageFlash = 0.f;
-        float attackCooldown = 0.f;
-        float attackDuration = 0.0f;
+        Timer iFrameHit;
+        Timer damageFlashTime;
+        Timer attackCooldown;
+        Timer attackDuration;
         bool alive =  true;
         sf::Vector2f velocity{0, 0};
         sf::Vector2f position{500, 600};

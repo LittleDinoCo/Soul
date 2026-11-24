@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/System/Vector2.hpp>
+#include "timer.hpp"
 
 class Enemy;
 
@@ -13,14 +14,14 @@ class Player {
         float maxSpeed = 300.f;
         float friction = 0.95f;
         float health = 100.f;
-        float iFrameHit = 0.f;
-        float iFrameDash = 0.f;
-        float damageFlash = 0.f;
+        Timer iFrameHit;
+        Timer iFrameDash;
+        Timer damageFlashTime;
+        Timer siphonTime;
+        Timer attackDuration;
         float maxHealth = 100.f;
-        float attackDuration = 0.f;
-        float isSiphoning = 0.f; 
         bool alive = true;
-        bool siphoned = false;
+        bool siphoning = false;
         sf::Vector2f velocity{0, 0};
         sf::Vector2f position{906, 600};
         sf::Vector2f attackDir;
@@ -33,6 +34,7 @@ class Player {
         void takeDamage(float damage, float iFrame);
         void attack(Enemy& enemy, sf::RenderWindow& window, float attackDur);
         void siphon(Enemy& enemy, sf::RenderWindow& window);
+        void cancelSiphon();
         void draw(sf::RenderWindow& window);
         bool attackHitsEnemy(const Enemy& enemy, sf::Vector2f attackPos, float angleRad);
         sf::Vector2f getPos() const;

@@ -78,6 +78,7 @@ int main() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) direction.x = -1;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) direction.x = 1;
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) player.siphon(enemy, window);
+        else player.cancelSiphon();
 
 
         float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);

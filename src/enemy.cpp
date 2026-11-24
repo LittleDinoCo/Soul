@@ -12,7 +12,7 @@ void Enemy::draw(sf::RenderWindow& window) {
     if (alive) {
         shape.setPosition(position);
         shape.setFillColor(sf::Color::Red);
-        if (damageFlash > 0) {
+        if (damageFlashTime.read() > 0) {
             shape.setFillColor(sf::Color::White);
         }
         window.draw(shape);
@@ -20,37 +20,20 @@ void Enemy::draw(sf::RenderWindow& window) {
 }
 
 void Enemy::update(const Player& target, float dt) {
-    if (iFrameHit > 0) {
-        iFrameHit -= dt;
-        if (iFrameHit < 0) {
-            iFrameHit = 0;
-        }
-    }
-    if (damageFlash > 0) {
-        damageFlash -= dt;
-        if (damageFlash < 0) {
-            damageFlash = 0;
-        }
-    }
-    if (attackDuration > 0) {
-        attackDuration -= dt;
-        if (attackDuration < 0) {
-            attackDuration = 0;
-        }
-    }
-    if (attackCooldown > 0) {
-        attackCooldown -= dt;
-        if (attackCooldown < 0) {
-            attackCooldown = 0;
-        }
-    }
+    iFrameHit.tick(dt);
+    damageFlashTime.tick(dt);
+    attackDuration.tick(dt);
+    attackCooldown.tick(dt);
+
+
+
     sf::Vector2f enemyToTarget = target.getPos() - position;
     float length = std::sqrt((enemyToTarget.x * enemyToTarget.x) + (enemyToTarget.y * enemyToTarget.y));
 
-    if (length < 200 + radius + target.getRadius() && attackCooldown == 0) {
+    if (length < 200 + radius + target.getRadius() && attackCooldown.read() == 0) {
         attack();
     }
-    else if (attackDuration == 0) {
+    else if (attackDuration.read() == 0) {
         move(target.getPos(), dt);
     }
     position += (velocity * dt);
@@ -59,17 +42,17 @@ void Enemy::move(sf::Vector2f targetPos, float dt) {
     sf::Vector2f enemyToTarget = targetPos - position;
     float length = std::sqrt((enemyToTarget.x * enemyToTarget.x) + (enemyToTarget.y * enemyToTarget.y));
     sf::Vector2f targetDir = enemyToTarget / length;
-    velocity = targetDir * 50.f;;
+    velocity = targetDir * 50.f;
 }
 void Enemy::attack() {
     velocity *= 5.f;
-    attackCooldown = 1;
-    attackDuration = 0.5f;
+    attackCooldown.start(1.f);
+    attackDuration.start(0.5f);
 }
 void Enemy::takeDamage(float damage, float iFrame) {
-   if (iFrameHit == 0) {
+   if (iFrameHit.read() == 0) {
         if (health >= damage) {
-            damageFlash = 0.2f;
+            damageFlashTime.start(0.2f);
             health -= damage;
         }
         else {
@@ -78,13 +61,13 @@ void Enemy::takeDamage(float damage, float iFrame) {
         if (health == 0) {
             alive = false;
         }
-        iFrameHit += iFrame;
+        iFrameHit.start(iFrame);
     }
 
 }
 void Enemy::knockback(float distance, sf::Vector2f direction) {
-    if (iFrameHit == 0) {
-        attackDuration = 0;
+    if (iFrameHit.read() == 0) {
+        attackDuration.stop();
         position += distance * direction;
     }
 }

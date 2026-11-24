@@ -16,7 +16,7 @@ void Player::draw(sf::RenderWindow& window) {
     if (alive) {
         shape.setPosition(position);
         shape.setFillColor(sf::Color::Green);
-        if (damageFlash > 0) {
+        if (damageFlashTime.read() > 0) {
             shape.setFillColor(sf::Color::White);
         }
         window.draw(shape);
@@ -38,56 +38,20 @@ void Player::move(sf::Vector2f dir, float dt) {
 }
 
 void Player::update(float dt) {
-    if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
-        isSiphoning = 0;
-        siphoned = false;
-    }
-    if (isSiphoning == 0) {
-        maxSpeed = topSpeed;
-    }
-
-    if (iFrameHit > 0) {
-        iFrameHit -= dt;
-        if (iFrameHit < 0) {
-            iFrameHit = 0;
-        }
-    }
-    if (iFrameDash > 0) {
-        iFrameDash -= dt;
-        if (iFrameDash < 0) {
-            iFrameDash = 0;
-        }
-    }
-    if (attackDuration > 0) {
-        attackDuration -= dt;
-        if (attackDuration < 0) {
-            attackDuration = 0;
-        }
-    }
-    if (damageFlash > 0) {
-        damageFlash -= dt;
-        if (damageFlash < 0) {
-            damageFlash = 0;
-        }
-    }
-    if (isSiphoning > 0) {
-        isSiphoning -= dt;
-        if (isSiphoning < 0) {
-            isSiphoning = 0;
-        }
-        if (isSiphoning <= 0) {
-            siphoned = true;
-        }
-    }
+    iFrameHit.tick(dt);
+    iFrameDash.tick(dt);
+    damageFlashTime.tick(dt);
+    attackDuration.tick(dt);
+    siphonTime.tick(dt);
 
 
     position += (velocity * dt);
 }
 void Player::takeDamage(float damage, float iFrame) {
-    if (iFrameHit == 0 && iFrameDash == 0) {
+    if (iFrameHit.read() == 0 && iFrameDash.read() == 0) {
         if (health >= damage) {
             health -= damage;
-            damageFlash = 0.2f;
+            damageFlashTime.start(0.2f);
         }
         else {
             health = 0;
@@ -95,9 +59,8 @@ void Player::takeDamage(float damage, float iFrame) {
         if (health == 0) {
             alive = false;
         }
-        isSiphoning = 0;
-        siphoned = false;
-        iFrameHit += iFrame;
+        cancelSiphon();
+        iFrameHit.start(iFrame);
     }
 }
 bool Player::attackHitsEnemy(const Enemy& enemy, sf::Vector2f attackPos, float angleRad) {
@@ -125,7 +88,7 @@ bool Player::attackHitsEnemy(const Enemy& enemy, sf::Vector2f attackPos, float a
 }
 
 void Player::attack(Enemy& enemy, sf::RenderWindow& window, float attackDur) {
-    if (attackDuration > 0) {
+    if (attackDuration.read() > 0) {
                 sf::Vector2f attackPos = position + attackDir * (radius + 25.f);
 
         float angleRad = std::atan2(attackDir.y, attackDir.x);
@@ -151,7 +114,7 @@ void Player::attack(Enemy& enemy, sf::RenderWindow& window, float attackDur) {
     if (length == 0.f) return;
     attackDir = mouseToPlayer / length;
 
-    attackDuration = attackDur;
+    attackDuration.start(attackDur);
 }
 
 void Player::siphon(Enemy& enemy, sf::RenderWindow& window) {
@@ -167,11 +130,7 @@ void Player::siphon(Enemy& enemy, sf::RenderWindow& window) {
     sf::Vector2f distance = enemy.getPos() - position;
     float length = std::sqrt((distance.x * distance.x) + (distance.y * distance.y)); 
     if (enemy.getRadius() + radius + 100 >= length && enemy.getHealth() <= 30 ) {
-        if (isSiphoning != 0) {
-            maxSpeed = topSpeed / 1.5;
-            return;
-        }
-        if (siphoned == true) {
+        if (siphoning == true && siphonTime.read() == 0.f) {
             int possible = 2;
             for (int soul = 0; soul < std::size(souls); soul ++) {
                 if (souls[soul] == 0) {
@@ -183,26 +142,33 @@ void Player::siphon(Enemy& enemy, sf::RenderWindow& window) {
             souls[possible] = enemy.getType();
             std::cout << souls[0] << " " << souls[1] << " " << souls[2] << "\n";
             enemy.takeDamage(1000000.f, 0.f);
-            siphoned = false;
+            cancelSiphon();
             return;
 
         }
     
     }
     else {
-        isSiphoning = 0.f;
-        siphoned = false;
+        cancelSiphon();
         return;
     }
-    isSiphoning = 3.f;
+    if (!siphoning) {
+        siphonTime.start(3.f);
+        maxSpeed = topSpeed / 2;
+        siphoning = true;
+    }
 
 }
-
+void Player::cancelSiphon() {
+    siphonTime.stop();
+    siphoning = false;
+    maxSpeed = topSpeed;
+}
 sf::Vector2f Player::getPos() const {
     return position;
 }
 float Player::getAttackDuration() const {
-    return attackDuration;
+    return attackDuration.read();
 }
 float Player::getRadius() const {
     return radius;
