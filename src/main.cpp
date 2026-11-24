@@ -69,14 +69,26 @@ int main() {
  
                 }
             }
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                if (keyPressed->code == sf::Keyboard::Key::Q) {
+                    player.heal();
+ 
+                }
+            }
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                if (keyPressed->code == sf::Keyboard::Key::E) {
+                    player.imbue();
+ 
+                }
+            }
         }
 
         sf::Vector2f direction{0.f, 0.f};
         if (player.getAttackDuration() > 0) player.attack(enemy, window, 0.f);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) direction.y = -1;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) direction.y = 1;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) direction.y = 1;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) direction.x = -1;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) direction.x = 1;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) direction.x = 1;
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) player.siphon(enemy, window);
         else player.cancelSiphon();
 

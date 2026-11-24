@@ -18,14 +18,16 @@ class Player {
         Timer iFrameDash;
         Timer damageFlashTime;
         Timer siphonTime;
+        Timer imbueTime;
         Timer attackDuration;
         float maxHealth = 100.f;
+        float damage = 10;
         bool alive = true;
         bool siphoning = false;
         sf::Vector2f velocity{0, 0};
         sf::Vector2f position{906, 600};
         sf::Vector2f attackDir;
-        int souls[3] = {0, 0, 0};
+        int souls[3] = {1, 0, 0};
         sf::CircleShape shape;
     public:
         Player();
@@ -34,6 +36,8 @@ class Player {
         void takeDamage(float damage, float iFrame);
         void attack(Enemy& enemy, sf::RenderWindow& window, float attackDur);
         void siphon(Enemy& enemy, sf::RenderWindow& window);
+        void heal();
+        void imbue();
         void cancelSiphon();
         void draw(sf::RenderWindow& window);
         bool attackHitsEnemy(const Enemy& enemy, sf::Vector2f attackPos, float angleRad);

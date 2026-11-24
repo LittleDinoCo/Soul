@@ -43,9 +43,11 @@ void Player::update(float dt) {
     damageFlashTime.tick(dt);
     attackDuration.tick(dt);
     siphonTime.tick(dt);
-
+    imbueTime.tick(dt);
 
     position += (velocity * dt);
+
+    if (imbueTime.read() == 0) damage = 10;
 }
 void Player::takeDamage(float damage, float iFrame) {
     if (iFrameHit.read() == 0 && iFrameDash.read() == 0) {
@@ -102,7 +104,7 @@ void Player::attack(Enemy& enemy, sf::RenderWindow& window, float attackDur) {
         window.draw(attackBox);
         if (attackHitsEnemy(enemy, attackPos, angleRad)) {
             enemy.knockback(40.f, attackDir);
-            enemy.takeDamage(20.f, 0.5f);
+            enemy.takeDamage(damage, 0.5f);
         }
         return;
     }
@@ -129,7 +131,7 @@ void Player::siphon(Enemy& enemy, sf::RenderWindow& window) {
     //Actual Stuff
     sf::Vector2f distance = enemy.getPos() - position;
     float length = std::sqrt((distance.x * distance.x) + (distance.y * distance.y)); 
-    if (enemy.getRadius() + radius + 100 >= length && enemy.getHealth() <= 30 ) {
+    if (enemy.getRadius() + radius + 100 >= length && enemy.getHealth() <= 30 && enemy.getAlive()) {
         if (siphoning == true && siphonTime.read() == 0.f) {
             int possible = 2;
             for (int soul = 0; soul < std::size(souls); soul ++) {
@@ -164,6 +166,43 @@ void Player::cancelSiphon() {
     siphoning = false;
     maxSpeed = topSpeed;
 }
+void Player::heal() {
+    if (health == maxHealth) return;
+    int healType = 0;
+    int soulIndex = 0;
+    for (int soul = 0; soul < std::size(souls); soul ++) {
+            if (souls[soul] != 0) {
+                healType = souls[soul];
+                soulIndex = soul;
+                break;
+            }
+        }
+    if (healType != 0) {
+        health += 20;
+        souls[soulIndex] = 0;
+        if (health > maxHealth) {
+            health = maxHealth;
+        }
+    }
+}
+void Player::imbue() {
+    if (imbueTime.read() > 0) return;
+    int imbueType = 0;
+    int soulIndex = 0;
+    for (int soul = 0; soul < std::size(souls); soul ++) {
+            if (souls[soul] != 0) {
+                imbueType = souls[soul];
+                soulIndex = soul;
+                break;
+            }
+        }
+    if (imbueType != 0) {
+        damage *= 2;
+        imbueTime.start(2.f);
+        souls[soulIndex] = 0;
+    }
+}
+
 sf::Vector2f Player::getPos() const {
     return position;
 }
