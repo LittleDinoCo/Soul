@@ -1,5 +1,6 @@
 #include "player.hpp"
 #include "enemy.hpp"
+#include "collide.hpp"
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Window.hpp>
@@ -65,29 +66,6 @@ void Player::takeDamage(float damage, float iFrame) {
         iFrameHit.start(iFrame);
     }
 }
-bool Player::attackHitsEnemy(const Enemy& enemy, sf::Vector2f attackPos, float angleRad) {
-    sf::Vector2f widthDir = {-std::sin(angleRad), std::cos(angleRad)};
-    sf::Vector2f heightDir = {std::cos(angleRad), std::sin(angleRad)};
-    sf::Vector2f swordToEnemy = enemy.getPos() - attackPos;
-
-    float projectedWidth = (swordToEnemy.x * widthDir.x) + (swordToEnemy.y * widthDir.y);
-    float projectedHeight = (swordToEnemy.x * heightDir.x) + (swordToEnemy.y * heightDir.y);
-
-    float closestWidth = std::clamp(projectedWidth, -10.f, 10.f);
-    float closestHeight = std::clamp(projectedHeight, -25.f, 25.f);
-
-    sf::Vector2f closestPoint = attackPos + widthDir * closestWidth + heightDir * closestHeight;
-
-    sf::Vector2f distToPoint = enemy.getPos() - closestPoint;
-
-    float distance = hypot(distToPoint.x, distToPoint.y);
-
-    if (distance <= enemy.getRadius()) {
-        return true;
-    }
-
-    return false;
-}
 
 void Player::attack(Enemy& enemy, sf::RenderWindow& window, float attackDur) {
     if (attackDuration.read() > 0) {
@@ -102,7 +80,7 @@ void Player::attack(Enemy& enemy, sf::RenderWindow& window, float attackDur) {
         attackBox.setPosition(attackPos);
         attackBox.setFillColor(sf::Color::Blue);
         window.draw(attackBox);
-        if (attackHitsEnemy(enemy, attackPos, angleRad)) {
+        if (Collide::squareOnCircle(enemy.getPos(), enemy.getRadius(), attackPos, attackBox.getSize(), angleRad)) {
             enemy.knockback(40.f, attackDir);
             enemy.takeDamage(damage, 0.5f);
         }

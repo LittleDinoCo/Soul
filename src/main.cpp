@@ -4,6 +4,7 @@
 #include <string>
 #include "player.hpp"
 #include "enemy.hpp"
+#include "collide.hpp"
 
 
 struct gameData {
@@ -16,7 +17,7 @@ Enemy enemy;
 
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode({1920, 1200}), "Pangolin Game");
+    sf::RenderWindow window(sf::VideoMode({1920, 1200}), "Soul Game");
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(false);
      sf::View view(sf::FloatRect({0.f, 0.f}, {1920.f, 1080.f}));
@@ -110,7 +111,7 @@ int main() {
         sf::Vector2f difference = player.getPos() - enemy.getPos();
         float distance = std::sqrt(difference.x * difference.x + difference.y * difference.y); 
 
-        if (distance < pradius + eradius && enemy.getAlive()) {
+        if (Collide::circleOnCircle(player.getPos(), enemy.getPos(), player.getRadius(), enemy.getRadius()) && enemy.getAlive()) {
             player.takeDamage(20.f, 0.5f);
         }
         
