@@ -1,9 +1,28 @@
 #include "enemy.hpp"
 #include "player.hpp"
+#include "enemyTypes.hpp"
+#include "maths.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 
+
 Enemy::Enemy() {
+    EnemyStats stats = getStats(EnemyType::Bob);
+    maxHP = stats.maxHP;
+    moveSpeed = stats.moveSpeed;
+    radius = stats.radius;
+    retreatChance = stats.retreatChance;
+    walkChance = stats.walkChance;
+    attackDistance = stats.attackDistance;
+    attackDamage = stats.attack.damage;
+    windupTime = stats.attack.windupTime;
+    attackDuration = stats.attack.attackDuration;
+    cooldownTime = stats.attack.cooldownTime;
+    speedMultiplier = stats.attack.speedMultiplier;
+    type = stats.attack.type;
+    attackSize = stats.attack.attackSize;
+    canInterrupt = stats.attack.canInterrupt;
+    health = maxHP;
     shape.setRadius(radius);
     shape.setOrigin({radius, radius});
 }
@@ -12,47 +31,84 @@ void Enemy::draw(sf::RenderWindow& window) {
     if (alive) {
         shape.setPosition(position);
         shape.setFillColor(sf::Color::Red);
-        if (damageFlashTime.read() > 0) {
+        if (damageFlashTimer.read() > 0) {
             shape.setFillColor(sf::Color::White);
         }
         window.draw(shape);
     }
 }
 
-void Enemy::update(const Player& target, float dt) {
-    iFrameHit.tick(dt);
-    damageFlashTime.tick(dt);
-    attackDuration.tick(dt);
-    attackCooldown.tick(dt);
+void Enemy::update(sf::Vector2f targetPosition, float targetRadius, float dt) {
+    iFrameHitTimer.tick(dt);
+    damageFlashTimer.tick(dt);
+    attackDurationTimer.tick(dt);
+    attackCooldownTimer.tick(dt);
 
+    chooseIntent(targetPosition, targetRadius, dt);
 
-
-    sf::Vector2f enemyToTarget = target.getPos() - position;
-    float length = std::sqrt((enemyToTarget.x * enemyToTarget.x) + (enemyToTarget.y * enemyToTarget.y));
-
-    if (length < 200 + radius + target.getRadius() && attackCooldown.read() == 0) {
-        attack();
-    }
-    else if (attackDuration.read() == 0) {
-        move(target.getPos(), dt);
-    }
     position += (velocity * dt);
 }
-void Enemy::move(sf::Vector2f targetPos, float dt) {
-    sf::Vector2f enemyToTarget = targetPos - position;
-    float length = std::sqrt((enemyToTarget.x * enemyToTarget.x) + (enemyToTarget.y * enemyToTarget.y));
+
+void Enemy::chooseIntent(sf::Vector2f targetPosition, float targetRadius, float dt) {
+
+    
+    sf::Vector2f enemyToTarget = targetPosition - position;
+    float length = std::hypot(enemyToTarget.x, enemyToTarget.y);
     sf::Vector2f targetDir = enemyToTarget / length;
-    velocity = targetDir * 50.f;
+    if (attackDurationTimer.read() == 0) {
+
+        if (attackCooldownTimer.read() > 0) {
+            velocity = targetDir * moveSpeed * 0.5f;
+            return;
+        }
+        //If too far away
+        if (length > attackDistance) {
+            move(targetDir, dt);
+            return;
+        }
+            
+        if (attackCooldownTimer.read() == 0) {
+            //Random chance to retreat
+            if (rollChance(retreatChance)) {
+                move(targetDir, dt);
+                retreat();
+                return;
+            }
+            if (rollChance(walkChance)) {
+                move(targetDir, dt);
+                return;
+            }
+
+            //If not retreating
+            move(targetDir, dt);
+            attack();
+        
+        }
+    }
+   
+
+}
+void Enemy::retreat() {
+    velocity = -velocity * speedMultiplier;
+    attackCooldownTimer.start(cooldownTime + attackDuration);
+    attackDurationTimer.start(attackDuration);
+}
+
+void Enemy::wait() {
+    velocity = {0, 0};
+}
+void Enemy::move(sf::Vector2f targetDir, float dt) {
+    velocity = targetDir * moveSpeed;
 }
 void Enemy::attack() {
-    velocity *= 5.f;
-    attackCooldown.start(1.f);
-    attackDuration.start(0.5f);
+    velocity *= speedMultiplier;
+    attackCooldownTimer.start(cooldownTime + attackDuration);
+    attackDurationTimer.start(attackDuration);
 }
 void Enemy::takeDamage(float damage, float iFrame) {
-   if (iFrameHit.read() == 0) {
+   if (iFrameHitTimer.read() == 0) {
         if (health >= damage) {
-            damageFlashTime.start(0.2f);
+            damageFlashTimer.start(0.2f);
             health -= damage;
         }
         else {
@@ -61,13 +117,12 @@ void Enemy::takeDamage(float damage, float iFrame) {
         if (health == 0) {
             alive = false;
         }
-        iFrameHit.start(iFrame);
+        iFrameHitTimer.start(iFrame);
     }
 
 }
 void Enemy::knockback(float distance, sf::Vector2f direction) {
-    if (iFrameHit.read() == 0) {
-        attackDuration.stop();
+    if (iFrameHitTimer.read() == 0 && canInterrupt) {
         position += distance * direction;
     }
 }
@@ -79,6 +134,9 @@ float Enemy::getRadius() const {
 }
 float Enemy::getHealth() const {
     return health;
+}
+float Enemy::getDamage() const {
+    return attackDamage;
 }
 int Enemy::getType() const {
     return 1;

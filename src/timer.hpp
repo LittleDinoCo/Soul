@@ -30,6 +30,9 @@ class Timer {
         void pause() {
             ticking = false;
         }
+        void resume() {
+            ticking = true;
+        }
         void stop() {
             remaining = 0;
             duration = 0;

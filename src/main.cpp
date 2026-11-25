@@ -77,7 +77,7 @@ int main() {
                 }
             }
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                if (keyPressed->code == sf::Keyboard::Key::E) {
+                if (keyPressed->code == sf::Keyboard::Key::F) {
                     player.imbue();
  
                 }
@@ -87,9 +87,9 @@ int main() {
         sf::Vector2f direction{0.f, 0.f};
         if (player.getAttackDuration() > 0) player.attack(enemy, window, 0.f);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) direction.y = -1;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) direction.y = 1;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) direction.y = 1;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) direction.x = -1;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) direction.x = 1;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) direction.x = 1;
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) player.siphon(enemy, window);
         else player.cancelSiphon();
 
@@ -100,7 +100,7 @@ int main() {
 
         player.move(direction, dt);
         player.update(dt);
-        enemy.update(player, dt);
+        enemy.update(player.getPos(), player.getRadius(), dt);
 
         eHealth.setPosition({enemy.getPos().x, enemy.getPos().y - 50});
         eHealth.setString(std::to_string(std::lround(enemy.getHealth())));
@@ -112,7 +112,7 @@ int main() {
         float distance = std::sqrt(difference.x * difference.x + difference.y * difference.y); 
 
         if (Collide::circleOnCircle(player.getPos(), enemy.getPos(), player.getRadius(), enemy.getRadius()) && enemy.getAlive()) {
-            player.takeDamage(20.f, 0.5f);
+            player.takeDamage(enemy.getDamage(), 0.5f);
         }
         
                 
